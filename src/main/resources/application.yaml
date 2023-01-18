@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    url: ENC(pYM4nQIk1dPUT+vRDl56KY7/e4YctyqLKrpLeLlUjSEPPOpenobJOUmdjNew6G43)
+    password: ENC(RkY3ZZKJwWLYkts4xroMgAjLhi6i1+y0)
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: 'true'
+# global api prefix
+server.servlet.context-path: /api
+
+# swagger
+springdoc:
+  swagger-ui:
+    path: /docs
+
+jasypt:
+  encryptor:
+    password: testing
