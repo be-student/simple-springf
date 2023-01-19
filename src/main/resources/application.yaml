@@ -16,6 +16,9 @@ springdoc:
   swagger-ui:
     path: /docs
 
+jwt:
+  secret: secretsecretsecretsecretsecretsecretsecretsecretsecret
+
 jasypt:
   encryptor:
     password: testing
