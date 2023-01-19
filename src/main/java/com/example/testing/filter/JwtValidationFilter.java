@@ -24,12 +24,18 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtValidationFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION = "Authorization";
+    private static final String BEARER = "BEARER ";
     @Value("${jwt.secret}")
     private String jwtSecret;
+
+    @Value("${jwt.issuer}")
+    private String jwtIssuer;
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
         String jwt = request.getHeader(AUTHORIZATION);
         if (jwt != null) {
             validateToken(jwt);
@@ -40,27 +46,37 @@ public class JwtValidationFilter extends OncePerRequestFilter {
     private void validateToken(String header) {
         try {
             validateAuthorizationHeader(header);
-            String jwt = StringUtils.substringAfter(header, "Bearer ");
+            String jwt = StringUtils.substring(header, BEARER.length());
             SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
 
-            Claims claims = io.jsonwebtoken.Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(jwt)
-                    .getBody();
-            String userId = String.valueOf(claims.get("userId"));
-            String authorities = String.valueOf(claims.get("authorities"));
-            Authentication auth = new UsernamePasswordAuthenticationToken(userId, null,
-                    AuthorityUtils.commaSeparatedStringToAuthorityList(authorities));
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            claim(jwt, key);
         } catch (Exception e) {
             throw new BadCredentialsException("Invalid Token received", e);
         }
     }
 
     private void validateAuthorizationHeader(String authorizationHeader) {
-        if (!StringUtils.startsWithIgnoreCase(authorizationHeader, "Bearer ")) {
+        if (!StringUtils.startsWithIgnoreCase(authorizationHeader, BEARER)) {
             throw new BadCredentialsException("Invalid Token received");
         }
+    }
+
+    private void claim(String jwt, SecretKey key) {
+        Claims claims = io.jsonwebtoken.Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(jwt)
+                .getBody();
+        String issuer = String.valueOf(claims.get("iss"));
+        if (!StringUtils.equals(issuer, jwtIssuer)) {
+            throw new BadCredentialsException("Invalid Token received");
+        }
+
+        String userId = String.valueOf(claims.get("userId"));
+
+        String authorities = String.valueOf(claims.get("authorities"));
+        Authentication auth = new UsernamePasswordAuthenticationToken(userId, null,
+                AuthorityUtils.commaSeparatedStringToAuthorityList(authorities));
+        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 }

@@ -17,6 +17,9 @@ public class AuthController {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
+    @Value("${jwt.issuer}")
+    private String jwtIssuer;
+
     @GetMapping("/free")
     public ResponseEntity<AuthResponseDto> free() {
         String jwt = generateJwtToken(1);
@@ -26,7 +29,7 @@ public class AuthController {
     private String generateJwtToken(int userId) {
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
         return Jwts.builder()
-                .setIssuer("test")
+                .setIssuer(jwtIssuer)
                 .claim("userId", userId)
                 .claim("authorities", "ROLE_USER")
                 .signWith(key)

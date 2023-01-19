@@ -17,6 +17,7 @@ springdoc:
     path: /docs
 
 jwt:
+  issuer: be-student
   secret: secretsecretsecretsecretsecretsecretsecretsecretsecret
 
 jasypt:
