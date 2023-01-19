@@ -1,9 +1,11 @@
 package com.example.testing.config;
 
+import com.example.testing.filter.JwtValidationFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,10 +13,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
+@RequiredArgsConstructor
 public class ProjectSecurityConfig {
+
+    private final JwtValidationFilter jwtValidationFilter;
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -29,6 +35,7 @@ public class ProjectSecurityConfig {
                 .anyRequest().denyAll().and()
                 .httpBasic().disable()
                 .formLogin().disable()
+                .addFilterAfter(jwtValidationFilter, BasicAuthenticationFilter.class)
                 .build();
     }
 
